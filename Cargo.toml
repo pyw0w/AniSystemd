@@ -1,0 +1,14 @@
+[package]
+name = "anisystemd"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anicore = { path = "../anicore" }
+tokio = { workspace = true }
+anyhow = "1.0"
+dotenv = "0.15"
+notify = "6.1"
+libsystemd = "0.5"
+tracing = "0.1"
+
