@@ -27,20 +27,32 @@ async fn main() -> Result<()> {
     // Создание и запуск бота
     let bot = Bot::new().await?;
     
-    // Отправка READY уведомления systemd после успешной инициализации
-    if let Err(e) = libsystemd::daemon::notify(false, &[libsystemd::daemon::NotifyState::Ready]) {
-        warn!("Failed to send systemd READY notification: {}", e);
-    } else {
-        info!("Sent systemd READY notification");
+    // Отправка READY уведомления systemd после успешной инициализации (только на Linux)
+    #[cfg(target_os = "linux")]
+    {
+        if let Err(e) = libsystemd::daemon::notify(false, &[libsystemd::daemon::NotifyState::Ready]) {
+            warn!("Failed to send systemd READY notification: {}", e);
+        } else {
+            info!("Sent systemd READY notification");
+        }
     }
 
-    // Запуск watchdog в фоне
+    // Запуск watchdog в фоне (только на Linux)
+    #[cfg(target_os = "linux")]
     let watchdog_handle = tokio::spawn(async move {
         loop {
             tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
             if let Err(e) = libsystemd::daemon::notify(false, &[libsystemd::daemon::NotifyState::Watchdog]) {
                 warn!("Failed to send systemd WATCHDOG notification: {}", e);
             }
+        }
+    });
+    
+    #[cfg(not(target_os = "linux"))]
+    let watchdog_handle = tokio::spawn(async {
+        // На не-Linux системах просто ждем бесконечно
+        loop {
+            tokio::time::sleep(tokio::time::Duration::from_secs(3600)).await;
         }
     });
 

@@ -9,6 +9,8 @@ tokio = { workspace = true }
 anyhow = "1.0"
 dotenv = "0.15"
 notify = "6.1"
-libsystemd = "0.5"
 tracing = "0.1"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libsystemd = "0.5"
 
